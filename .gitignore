@@ -29,3 +29,4 @@ barrier
 compile_commands.json
 .clangd
 .cache
+time.txt
