@@ -16,7 +16,8 @@ main(int argc, char* argv[]) {
     }
 
     int len = 0;
-    while (read(0, &c, 1)) {
+    int rstatus;
+    while ((rstatus = read(0, &c, 1)) > 0) {
         if (argc_new >= MAXARG) {
             fprintf(2, "too many args\n");
             exit(1);
@@ -64,5 +65,9 @@ main(int argc, char* argv[]) {
         } else {
             buf[argc_new][len++] = c;
         }
+    }
+    if (rstatus < 0) {
+        fprintf(2, "read failed\n");
+        exit(1);
     }
 }

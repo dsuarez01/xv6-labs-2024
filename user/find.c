@@ -56,7 +56,9 @@ find(char *path, char *name) {
         strcpy(buf, path);
         p = buf+strlen(buf);
         *p++ = '/';
-        while(read(fd, &de, sizeof(de)) == sizeof(de)) {
+        
+        int rstatus;
+        while((rstatus = read(fd, &de, sizeof(de))) == sizeof(de)) {
             if (
                 de.inum == 0 || 
                 strcmp(de.name, ".") == 0 || 
@@ -68,6 +70,11 @@ find(char *path, char *name) {
             p[DIRSIZ] = 0;
             find(buf, name);
         }
+
+        if (rstatus < 0) {
+            printf("find: failed to read entry, skipping rest of directory...\n");
+        }
+
         break;
     }
     close(fd);

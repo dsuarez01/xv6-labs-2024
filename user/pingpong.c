@@ -38,12 +38,23 @@ main(int argc, char *argv[]) {
             exit(cstatus);
         }
 
-        read(fds[0], &b, 1);
+        int rstatus;
+        rstatus = read(fds[0], &b, 1);
+        if (rstatus <= 0) {
+            fprintf(2, "%d: read failed\n", parent_pid);
+            exit(1);
+        }
+
         printf("%d: received pong\n", parent_pid);
         close(fds[0]);
     } else if (pid == 0) { // child
         int child_pid = getpid();
-        read(fds[0], &b, 1);
+        int rstatus;
+        rstatus = read(fds[0], &b, 1);
+        if (rstatus <= 0) {
+            fprintf(2, "%d: read failed\n", child_pid);
+            exit(1);
+        }
         close(fds[0]);
 
         printf("%d: received ping\n", child_pid);

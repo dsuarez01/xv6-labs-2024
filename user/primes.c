@@ -5,10 +5,13 @@ void
 filter(int read_fd) {
 
     int parent_pid = getpid();
-    int p;
+    int rstatus, p;
 
-    if (!read(read_fd, &p, sizeof(p))) {
+    if ((rstatus = read(read_fd, &p, sizeof(p))) == 0) {
         return;
+    } else if (rstatus < 0) {
+        fprintf(2, "%d: read failed\n", parent_pid);
+        exit(1);
     }
 
     printf("prime %d\n", p);
@@ -30,14 +33,20 @@ filter(int read_fd) {
     if (pid > 0) {
         close(fds[0]);
         
-        int n;
-        while(read(read_fd, &n, sizeof(n))) {
+        int n, wstatus;
+        while((rstatus = read(read_fd, &n, sizeof(n))) > 0) {
             if (n%p != 0) {
-                if (write(fds[1], &n, sizeof(n)) < sizeof(n)) {
+                wstatus = write(fds[1], &n, sizeof(n));
+                if (wstatus < 0 || wstatus != sizeof(n)) {
                     fprintf(2, "%d: failed to write %d\n", parent_pid, n);
                     exit(1);
                 }
             }
+        }
+
+        if (rstatus < 0) {
+            fprintf(2, "%d: read failed\n", parent_pid);
+            exit(1);
         }
 
         close(read_fd);
@@ -84,9 +93,10 @@ main(int argc, char *argv[]) {
         close(fds[0]); // parent doesn't use this read fd
 
         // send [2..280] over write pipe
-        int i;
+        int i, wstatus;
         for (i=2; i<=280; ++i) {
-            if (write(fds[1], &i, sizeof(i)) < sizeof(i)) {
+            wstatus = write(fds[1], &i, sizeof(i));
+            if (wstatus < 0 || wstatus != sizeof(i)) {
                 fprintf(2, "%d: write failed at %d\n", parent_pid, i);
                 exit(1);
             }
