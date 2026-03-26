@@ -27,6 +27,5 @@ barrier
 *.pcap
 
 compile_commands.json
-.clangd
 .cache
 time.txt
